@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shipment Classification</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function plotSerial() {
+            const serial_no = $('#serial_no').val();
+            if (serial_no) {
+                $('#plot').attr('src', '/plot/' + serial_no);
+                $('#classification-form').show();
+            }
+        }
+
+        function classifyShipment() {
+            const serial_no = $('#serial_no').val();
+            const classification = $('#classification').val();
+            $.post('/classify', { serial_no: serial_no, classification: classification }, function(data) {
+                alert(data.message);
+                $('#serial_no option:selected').remove();
+                $('#plot').attr('src', '');
+                $('#classification-form').hide();
+                updateCounts(data.counts);
+                updateTotalClassified(data.total_classified);
+            });
+        }
+
+        function updateCounts(counts) {
+            for (const [key, value] of Object.entries(counts)) {
+                $(`#count-${key}`).text(value);
+            }
+        }
+
+        function updateTotalClassified(total_classified) {
+            $('#total-classified').text(`${total_classified} out of ${total_shipments} shipments classified`);
+        }
+
+        $(document).ready(function() {
+            $('#classification-form').hide();
+            updateTotalClassified(total_classified);
+        });
+    </script>
+</head>
+<body>
+    <h1>Shipment Classification</h1>
+    <select id="serial_no" onchange="plotSerial()">
+        <option value="">Select Serial Number</option>
+        {% for serial in serials %}
+            <option value="{{ serial }}">{{ serial }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <img id="plot" src="" style="max-width: 100%; height: auto;">
+    <br>
+    <div id="classification-form">
+        <label for="classification">Classify as: </label>
+        <select id="classification">
+            <option value="0">spikey</option>
+            <option value="1">excursions</option>
+            <option value="2">not precooled</option>
+            <option value="3">initial ramp up</option>
+            <option value="4">cool_defrost</option>
+            <option value="5">extended_drift</option>
+            <option value="6">normal</option>
+            <option value="7">Chilling injury</option>
+            <option value="8">Questionable start stop</option>
+        </select>
+        <button onclick="classifyShipment()">Classify</button>
+    </div>
+    <h2>Counts</h2>
+    <ul>
+        {% for key, value in counts.items() %}
+            <li>{{ key }}: <span id="count-{{ key }}">{{ value }}</span></li>
+        {% endfor %}
+    </ul>
+    <h2>Total</h2>
+    <p id="total-classified">{{ total_classified }} out of {{ total_shipments }} shipments classified</p>
+</body>
+</html>

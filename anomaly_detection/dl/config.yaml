@@ -1,0 +1,9 @@
+project: LSTM_Autoencoder
+entity: divineod
+learning_rate: 0.001
+epochs: 300
+batch_size: 8
+seq_len: 300
+embedding_dim: 128
+num_layers: 2
+input_dim: 300
